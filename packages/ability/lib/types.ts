@@ -1,0 +1,9 @@
+export type AbilityCan = (action: string, subject?: unknown, field?: string) => boolean
+
+export interface AbilityLike {
+  can: AbilityCan
+  cannot?: AbilityCan
+  on?: (event: 'updated', handler: () => void) => void
+  off?: (event: 'updated', handler: () => void) => void
+  subscribe?: (handler: () => void) => void | (() => void)
+}
