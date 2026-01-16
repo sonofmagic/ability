@@ -41,7 +41,7 @@ import App from './App.vue'
 
 const ability = {
   can(action: string, subject?: unknown) {
-    return action === 'read' && subject === 'Post'
+    return action === 'add' && subject === 'system:dept'
   },
 }
 
@@ -73,7 +73,7 @@ createApp(App)
 
 ```ts
 // 登录或刷新后从后端获取 roles + permissions
-ability.update({ roles: ['admin'], permissions: ['post:read', 'post:edit'] })
+ability.update({ roles: ['admin'], permissions: ['system:dept:add', 'system:config:export'] })
 ```
 
 ### 在组件中使用
@@ -86,19 +86,19 @@ const { can } = useAbility()
 </script>
 
 <template>
-  <div v-if="$can('read', 'Post')">
-    You can read posts.
+  <div v-if="$can('add', 'system:dept')">
+    You can add departments.
   </div>
-  <Can permission="post:read">
+  <Can permission="system:dept:add">
     Visible by permission.
   </Can>
   <Can :roles="['admin', 'ops']">
     Visible by role.
   </Can>
-  <Can :permissions="['post:read', 'post:edit']" mode="all">
+  <Can :permissions="['system:dept:add', 'system:config:export']" mode="all">
     Requires both permissions.
   </Can>
-  <div v-if="can('read', 'Post')">
+  <div v-if="can('add', 'system:dept')">
     useAbility().can 也可直接使用
   </div>
 </template>
@@ -116,14 +116,14 @@ createApp(App)
 
 ```vue
 <template>
-  <button :disabled="!$can('edit', 'Post')">
-    编辑帖子
+  <button :disabled="!$can('export', 'system:config')">
+    导出配置
   </button>
-  <div v-if="$can('read', 'Post')">
-    允许查看帖子
+  <div v-if="$can('add', 'system:dept')">
+    允许新增部门
   </div>
-  <div v-if="$ability.hasPermission('post:publish')">
-    允许发布
+  <div v-if="$ability.hasPermission('system:config:export')">
+    允许导出配置
   </div>
   <div v-if="$ability.hasRole('admin')">
     管理员入口
@@ -139,15 +139,15 @@ import { computed } from 'vue'
 
 const { can, hasPermission, hasRole } = useAbility()
 
-const canEditPost = computed(() => can('edit', 'Post'))
-const canPublish = computed(() => hasPermission?.('post:publish'))
+const canAddDept = computed(() => can('add', 'system:dept'))
+const canExportConfig = computed(() => hasPermission?.('system:config:export'))
 const isAdmin = computed(() => hasRole?.('admin'))
 ```
 
 ## 权限字符串规则
 
-- 默认格式：`subject:action`，分隔符为 `:`。
-- 通配符：`*`，示例：`post:*`、`*:read`、`*:*`。
+- 默认格式：`subject:action`，分隔符为 `:`，常见形态为 `system:dept:add`（最后一段为 action）。
+- 通配符：`*`，示例：`system:dept:*`、`*:export`、`*:*`。
 - 只传 action 也可（如 `read`），用于极简权限。
 - 可通过 `order: 'action:subject'` 切换格式。
 
@@ -192,10 +192,10 @@ import { Can } from '@icebreakers/ability'
 </script>
 
 <template>
-  <Can permission="post:read">
-    拥有 post:read 权限时显示
+  <Can permission="system:dept:add">
+    拥有 system:dept:add 权限时显示
   </Can>
-  <Can :permissions="['post:read', 'post:edit']" mode="all">
+  <Can :permissions="['system:dept:add', 'system:config:export']" mode="all">
     需要全部权限
   </Can>
   <Can role="admin">
@@ -204,11 +204,11 @@ import { Can } from '@icebreakers/ability'
   <Can :roles="['admin', 'ops']">
     任意角色即可
   </Can>
-  <Can :permissions="['report:read']" not>
+  <Can :permissions="['system:report:read']" not>
     没有权限时显示
   </Can>
-  <Can v-slot="{ allowed }" :permissions="['user:manage']" passThrough>
-    <span>{{ allowed ? '可管理用户' : '无权限' }}</span>
+  <Can v-slot="{ allowed }" :permissions="['system:user:remove']" passThrough>
+    <span>{{ allowed ? '可移除用户' : '无权限' }}</span>
   </Can>
 </template>
 ```
@@ -308,11 +308,11 @@ provideAbility(childAbility)
 import { createRolePermissionAbility } from '@icebreakers/ability'
 
 const ability = createRolePermissionAbility(
-  { permissions: ['post:read'] },
+  { permissions: ['system:dept:add'] },
   {
     permissionMatcher: (action, subject) => {
       const subjectName = typeof subject === 'string' ? subject : ''
-      return action === 'read' && subjectName === 'Post'
+      return action === 'add' && subjectName === 'system:dept'
     },
   },
 )

@@ -12,8 +12,8 @@ const permissions = computed(() => store.state.auth.permissions)
 const loading = computed(() => store.state.auth.loading)
 const lastUpdated = computed(() => store.state.auth.lastUpdated)
 
-const canDeploy = computed(() => can('deploy', 'system'))
-const canReadAudit = computed(() => can('read', 'audit'))
+const canExportConfig = computed(() => can('export', 'system:config'))
+const canAddDept = computed(() => can('add', 'system:dept'))
 
 const refresh = () => store.dispatch('auth/refreshAuth')
 
@@ -60,20 +60,20 @@ onMounted(() => {
     <section class="grid">
       <article class="module" style="--delay: 0ms">
         <h3>系统权限</h3>
-        <Can permission="system:read">
-          <p class="flag ok">系统可读</p>
+        <Can permission="system:config:export">
+          <p class="flag ok">允许导出配置</p>
         </Can>
-        <Can permission="system:deploy">
-          <p class="flag ok">允许部署</p>
+        <Can permission="system:dept:add">
+          <p class="flag ok">允许新增部门</p>
         </Can>
-        <Can permission="system:deploy" not>
-          <p class="flag warn">部署被锁定</p>
+        <Can permission="system:user:remove" not>
+          <p class="flag warn">用户移除被锁定</p>
         </Can>
       </article>
 
       <article class="module" style="--delay: 120ms">
         <h3>报表视图</h3>
-        <Can permission="report:read" passThrough v-slot="{ allowed }">
+        <Can permission="system:report:read" passThrough v-slot="{ allowed }">
           <p :class="['flag', allowed ? 'ok' : 'warn']">
             {{ allowed ? '可以查看报表' : '没有报表权限' }}
           </p>
@@ -83,11 +83,11 @@ onMounted(() => {
 
       <article class="module" style="--delay: 240ms">
         <h3>直接检查</h3>
-        <p :class="['flag', canDeploy ? 'ok' : 'warn']">
-          部署权限：{{ canDeploy ? '可用' : '不可用' }}
+        <p :class="['flag', canExportConfig ? 'ok' : 'warn']">
+          配置导出：{{ canExportConfig ? '可用' : '不可用' }}
         </p>
-        <p :class="['flag', canReadAudit ? 'ok' : 'warn']">
-          审计权限：{{ canReadAudit ? '可用' : '不可用' }}
+        <p :class="['flag', canAddDept ? 'ok' : 'warn']">
+          新增部门：{{ canAddDept ? '可用' : '不可用' }}
         </p>
         <p class="note">来自 <code>useAbility()</code>。</p>
       </article>

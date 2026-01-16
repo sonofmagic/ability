@@ -1,0 +1,46 @@
+{
+  "name": "@icebreakers/ability-vue2",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "vue2 ability helpers",
+  "author": "ice breaker <1324318532@qq.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonofmagic/ability.git",
+    "directory": "packages/ability-vue2"
+  },
+  "bugs": {
+    "url": "https://github.com/sonofmagic/ability/issues"
+  },
+  "keywords": [],
+  "sideEffects": false,
+  "exports": {
+    ".": "./lib/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "vue": "^2.7.0"
+  },
+  "devDependencies": {
+    "vue": "^2.7.16"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+      }
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  }
+}

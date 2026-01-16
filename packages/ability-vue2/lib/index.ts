@@ -1,0 +1,11 @@
+import './vue-ability'
+
+export { Can } from './component/can'
+export type { CanProps } from './component/can'
+export { abilitiesPlugin } from './plugin'
+export type { AbilityPluginOptions } from './plugin'
+export { reactiveAbility } from './reactiveAbility'
+export { createRolePermissionAbility, resolveSubjectName } from './rolePermissionAbility'
+export type { PermissionOrder, RolePermissionAbility, RolePermissionAbilityOptions, RolePermissionSnapshot } from './rolePermissionAbility'
+export type { AbilityCan, AbilityLike } from './types'
+export { ABILITY_TOKEN, provideAbility, useAbility } from './useAbility'

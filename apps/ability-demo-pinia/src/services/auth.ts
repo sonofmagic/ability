@@ -6,19 +6,19 @@ export interface AuthProfile {
 const samples: AuthProfile[] = [
   {
     roles: ['admin'],
-    permissions: ['post:read', 'post:edit', 'post:publish', 'user:manage'],
+    permissions: ['system:dept:add', 'system:post:edit', 'system:post:publish', 'system:user:remove'],
   },
   {
     roles: ['editor'],
-    permissions: ['post:read', 'post:edit'],
+    permissions: ['system:dept:add', 'system:post:edit'],
   },
   {
     roles: ['ops'],
-    permissions: ['post:*', 'audit:read'],
+    permissions: ['system:post:*', 'system:audit:read'],
   },
   {
     roles: ['viewer'],
-    permissions: ['post:read'],
+    permissions: ['system:dept:add'],
   },
 ]
 

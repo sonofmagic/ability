@@ -5,51 +5,51 @@ import { createRolePermissionAbility } from '../lib/rolePermissionAbility'
 describe('createRolePermissionAbility', () => {
   it('matches exact permissions', () => {
     const ability = createRolePermissionAbility({
-      permissions: ['Post:read'],
+      permissions: ['system:dept:add'],
     })
 
-    expect(ability.can('read', 'Post')).toBe(true)
-    expect(ability.can('edit', 'Post')).toBe(false)
+    expect(ability.can('add', 'system:dept')).toBe(true)
+    expect(ability.can('remove', 'system:dept')).toBe(false)
   })
 
   it('supports wildcards and action-only permissions', () => {
     const ability = createRolePermissionAbility({
-      permissions: ['Post:*', '*:manage', 'read'],
+      permissions: ['system:dept:*', '*:export', 'read'],
     })
 
-    expect(ability.can('edit', 'Post')).toBe(true)
-    expect(ability.can('manage', 'User')).toBe(true)
-    expect(ability.can('read', 'User')).toBe(true)
-    expect(ability.can('delete', 'User')).toBe(false)
+    expect(ability.can('add', 'system:dept')).toBe(true)
+    expect(ability.can('export', 'system:config')).toBe(true)
+    expect(ability.can('read', 'system:user')).toBe(true)
+    expect(ability.can('remove', 'system:user')).toBe(false)
   })
 
   it('matches permissions with wildcard via hasPermission', () => {
     const ability = createRolePermissionAbility({
-      permissions: ['*:read', 'post:*'],
+      permissions: ['system:dept:*', '*:export'],
     })
 
-    expect(ability.hasPermission('report:read')).toBe(true)
-    expect(ability.hasPermission('post:edit')).toBe(true)
-    expect(ability.hasPermission('user:manage')).toBe(false)
+    expect(ability.hasPermission('system:dept:add')).toBe(true)
+    expect(ability.hasPermission('system:config:export')).toBe(true)
+    expect(ability.hasPermission('system:user:remove')).toBe(false)
   })
 
   it('supports action:subject ordering', () => {
     const ability = createRolePermissionAbility(
-      { permissions: ['read:Post'] },
+      { permissions: ['add:system:dept'] },
       { order: 'action:subject' },
     )
 
-    expect(ability.can('read', 'Post')).toBe(true)
-    expect(ability.can('read', 'Comment')).toBe(false)
+    expect(ability.can('add', 'system:dept')).toBe(true)
+    expect(ability.can('add', 'system:user')).toBe(false)
   })
 
   it('normalizes inputs when configured', () => {
     const ability = createRolePermissionAbility(
-      { permissions: ['post:read'] },
+      { permissions: ['system:config:export'] },
       { normalize: value => value.toLowerCase() },
     )
 
-    expect(ability.can('READ', 'Post')).toBe(true)
+    expect(ability.can('EXPORT', 'SYSTEM:CONFIG')).toBe(true)
   })
 
   it('notifies listeners when permissions change', () => {
@@ -59,26 +59,26 @@ describe('createRolePermissionAbility', () => {
       calls += 1
     })
 
-    ability.update({ permissions: ['Post:read'] })
-    ability.update({ permissions: ['Post:read'] })
-    ability.setPermissions(['Post:edit'])
+    ability.update({ permissions: ['system:dept:add'] })
+    ability.update({ permissions: ['system:dept:add'] })
+    ability.setPermissions(['system:dept:remove'])
 
     expect(calls).toBe(2)
   })
 
   it('re-triggers reactiveAbility on updates', async () => {
-    const base = createRolePermissionAbility({ permissions: ['Post:read'] })
+    const base = createRolePermissionAbility({ permissions: ['system:dept:add'] })
     const reactive = reactiveAbility(base)
 
     let runs = 0
     watchEffect(() => {
-      reactive.can('read', 'Post')
+      reactive.can('add', 'system:dept')
       runs += 1
     })
 
     expect(runs).toBe(1)
 
-    base.setPermissions(['Post:edit'])
+    base.setPermissions(['system:dept:remove'])
     await nextTick()
 
     expect(runs).toBe(2)

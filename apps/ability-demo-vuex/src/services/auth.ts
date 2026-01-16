@@ -6,11 +6,11 @@ export interface AuthProfile {
 const samples: AuthProfile[] = [
   {
     roles: ['maintainer'],
-    permissions: ['system:read', 'system:deploy', 'report:read'],
+    permissions: ['system:config:export', 'system:dept:add', 'system:report:read'],
   },
   {
     roles: ['support'],
-    permissions: ['report:read', 'user:read'],
+    permissions: ['system:report:read', 'system:user:read'],
   },
   {
     roles: ['auditor'],

@@ -11,8 +11,8 @@ const permissions = computed(() => store.permissions)
 const loading = computed(() => store.loading)
 const lastUpdated = computed(() => store.lastUpdated)
 
-const canPublish = computed(() => can('publish', 'post'))
-const canManageUsers = computed(() => can('manage', 'user'))
+const canPublish = computed(() => can('publish', 'system:post'))
+const canManageUsers = computed(() => can('remove', 'system:user'))
 
 const refresh = () => store.refreshAuth()
 
@@ -68,22 +68,22 @@ onMounted(() => {
     <section class="grid">
       <article class="card" style="--delay: 0ms">
         <h3>内容权限</h3>
-        <Can permission="post:read">
-          <p class="status yes">可阅读帖子</p>
+        <Can permission="system:dept:add">
+          <p class="status yes">可新增部门</p>
         </Can>
-        <Can permission="post:edit">
+        <Can permission="system:post:edit">
           <p class="status yes">可编辑帖子</p>
         </Can>
-        <Can permission="post:delete" not>
+        <Can permission="system:post:remove" not>
           <p class="status no">暂时不能删除帖子</p>
         </Can>
       </article>
 
       <article class="card" style="--delay: 120ms">
         <h3>用户权限</h3>
-        <Can permission="user:manage" passThrough v-slot="{ allowed }">
+        <Can permission="system:user:remove" passThrough v-slot="{ allowed }">
           <p :class="['status', allowed ? 'yes' : 'no']">
-            {{ allowed ? '可以管理用户' : '没有管理用户权限' }}
+            {{ allowed ? '可以移除用户' : '没有用户移除权限' }}
           </p>
         </Can>
         <p class="hint">这个卡片使用了 <code>passThrough</code> 插槽。</p>
@@ -95,7 +95,7 @@ onMounted(() => {
           发布权限：{{ canPublish ? '已解锁' : '未开放' }}
         </p>
         <p class="status" :class="canManageUsers ? 'yes' : 'no'">
-          管理权限：{{ canManageUsers ? '已解锁' : '未开放' }}
+          移除权限：{{ canManageUsers ? '已解锁' : '未开放' }}
         </p>
         <p class="hint">来自 <code>useAbility().can</code>。</p>
       </article>
