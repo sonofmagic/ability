@@ -57,11 +57,13 @@ export const Can = defineComponent<CanProps>({
     passThrough: Boolean,
   },
   setup(props, { slots }) {
-    if (!slots.default) {
+    // eslint-disable-next-line dot-notation -- Vue 2 slots are index-signature typed in TS
+    if (!slots['default']) {
       throw new Error('Expects to receive default slot')
     }
 
-    const render = slots.default
+    // eslint-disable-next-line dot-notation -- Vue 2 slots are index-signature typed in TS
+    const render = slots['default']
     const ability = useAbility<RolePermissionAbilityLike>()
 
     return () => {

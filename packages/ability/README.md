@@ -39,13 +39,29 @@ import { abilitiesPlugin } from '@icebreakers/ability'
 import { createApp } from 'vue'
 import App from './App.vue'
 
+const roles = ['admin']
 const permissions = ['system:dept:add', 'system:config:export']
+function can(permission: string) {
+  // eslint-disable-next-line unicorn/prefer-includes -- explicit some() usage in docs
+  return permissions.some(item => item === permission)
+}
 
 const ability = {
-  can(permission: string) {
+  can,
+  cannot(permission: string) {
+    return !can(permission)
+  },
+  hasRole(role: string) {
+    // eslint-disable-next-line unicorn/prefer-includes -- explicit some() usage in docs
+    return roles.some(item => item === role)
+  },
+  hasPermission(permission: string) {
     // eslint-disable-next-line unicorn/prefer-includes -- explicit some() usage in docs
     return permissions.some(item => item === permission)
   },
+  on() {},
+  off() {},
+  subscribe() {},
 }
 
 createApp(App)
@@ -144,7 +160,7 @@ const { can, hasPermission, hasRole } = useAbility()
 
 const canAddDept = computed(() => can('system:dept:add'))
 const canExportConfig = computed(() => can('system:config:export'))
-const isAdmin = computed(() => hasRole?.('admin'))
+const isAdmin = computed(() => hasRole('admin'))
 ```
 
 ### useAbility 使用场景（建议）

@@ -179,7 +179,7 @@ export function createRolePermissionAbility(
 
   ability = {
     can,
-    cannot: ((action: string, subject?: unknown, field?: string) => !can(action, subject, field)) as AbilityLike['cannot'],
+    cannot: (action: string, subject?: unknown, field?: string) => !can(action, subject, field),
     update(next?: RolePermissionSnapshot) {
       applySnapshot(next)
     },
