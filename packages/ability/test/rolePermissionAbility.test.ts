@@ -8,8 +8,8 @@ describe('createRolePermissionAbility', () => {
       permissions: ['system:dept:add'],
     })
 
-    expect(ability.can('add', 'system:dept')).toBe(true)
-    expect(ability.can('remove', 'system:dept')).toBe(false)
+    expect(ability.can('system:dept:add')).toBe(true)
+    expect(ability.can('system:dept:remove')).toBe(false)
   })
 
   it('supports wildcards and action-only permissions', () => {
@@ -17,10 +17,10 @@ describe('createRolePermissionAbility', () => {
       permissions: ['system:dept:*', '*:export', 'read'],
     })
 
-    expect(ability.can('add', 'system:dept')).toBe(true)
-    expect(ability.can('export', 'system:config')).toBe(true)
-    expect(ability.can('read', 'system:user')).toBe(true)
-    expect(ability.can('remove', 'system:user')).toBe(false)
+    expect(ability.hasPermission('system:dept:add')).toBe(true)
+    expect(ability.hasPermission('system:config:export')).toBe(true)
+    expect(ability.hasPermission('system:user:read')).toBe(true)
+    expect(ability.hasPermission('system:user:remove')).toBe(false)
   })
 
   it('matches permissions with wildcard via hasPermission', () => {
@@ -39,8 +39,8 @@ describe('createRolePermissionAbility', () => {
       { order: 'action:subject' },
     )
 
-    expect(ability.can('add', 'system:dept')).toBe(true)
-    expect(ability.can('add', 'system:user')).toBe(false)
+    expect(ability.hasPermission('add:system:dept')).toBe(true)
+    expect(ability.hasPermission('add:system:user')).toBe(false)
   })
 
   it('normalizes inputs when configured', () => {
@@ -49,7 +49,7 @@ describe('createRolePermissionAbility', () => {
       { normalize: value => value.toLowerCase() },
     )
 
-    expect(ability.can('EXPORT', 'SYSTEM:CONFIG')).toBe(true)
+    expect(ability.can('SYSTEM:CONFIG:EXPORT')).toBe(true)
   })
 
   it('notifies listeners when permissions change', () => {
@@ -72,7 +72,7 @@ describe('createRolePermissionAbility', () => {
 
     let runs = 0
     watchEffect(() => {
-      reactive.can('add', 'system:dept')
+      reactive.can('system:dept:add')
       runs += 1
     })
 

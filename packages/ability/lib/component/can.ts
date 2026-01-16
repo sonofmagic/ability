@@ -11,10 +11,8 @@ type RolePermissionAbilityLike = AbilityLike & {
 }
 
 export interface CanProps {
-  role?: string | string[]
-  roles?: string | string[]
-  permission?: string | string[]
-  permissions?: string | string[]
+  r?: string | string[]
+  p?: string | string[]
   mode?: CheckMode
   not?: boolean
   passThrough?: boolean
@@ -49,10 +47,8 @@ function mergeLists(first: string[], second: string[]) {
 export const Can = defineComponent<CanProps>({
   name: 'Can',
   props: {
-    role: [String, Array] as PropType<string | string[]>,
-    roles: [String, Array] as PropType<string | string[]>,
-    permission: [String, Array] as PropType<string | string[]>,
-    permissions: [String, Array] as PropType<string | string[]>,
+    r: [String, Array] as PropType<string | string[]>,
+    p: [String, Array] as PropType<string | string[]>,
     mode: {
       type: String as PropType<CheckMode>,
       default: 'any',
@@ -70,11 +66,11 @@ export const Can = defineComponent<CanProps>({
     const ability = useAbility<RolePermissionAbilityLike>()
 
     return () => {
-      const roleList = mergeLists(normalizeList(props.role), normalizeList(props.roles))
-      const permissionList = mergeLists(normalizeList(props.permission), normalizeList(props.permissions))
+      const roleList = mergeLists(normalizeList(props.r), [])
+      const permissionList = mergeLists(normalizeList(props.p), [])
 
       if (roleList.length === 0 && permissionList.length === 0) {
-        throw new Error('Please provide `role(s)` or `permission(s)` to <Can>')
+        throw new Error('Please provide `r` or `p` to <Can>')
       }
 
       if (roleList.length > 0 && typeof ability.hasRole !== 'function') {

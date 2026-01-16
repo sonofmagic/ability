@@ -19,7 +19,7 @@
 
 - 提供 `createRolePermissionAbility`，内部维护 `roles` 与 `permissions` 集合。
 - 每次更新权限触发 `updated` 事件，配合 `reactiveAbility` 让 `<Can>` 与 `useAbility()` 自动响应。
-- `<Can>` 组件以 **role/permission 直传** 为核心，支持 `any/all` 模式，且可反向判断。
+- `<Can>` 组件以 **r/p 直传** 为核心，支持 `any/all` 模式，且可反向判断。
 
 ### 数据流示意
 
@@ -39,9 +39,12 @@ import { abilitiesPlugin } from '@icebreakers/ability'
 import { createApp } from 'vue'
 import App from './App.vue'
 
+const permissions = ['system:dept:add', 'system:config:export']
+
 const ability = {
-  can(action: string, subject?: unknown) {
-    return action === 'add' && subject === 'system:dept'
+  can(permission: string) {
+    // eslint-disable-next-line unicorn/prefer-includes -- explicit some() usage in docs
+    return permissions.some(item => item === permission)
   },
 }
 
@@ -86,19 +89,19 @@ const { can } = useAbility()
 </script>
 
 <template>
-  <div v-if="$can('add', 'system:dept')">
+  <div v-if="$can('system:dept:add')">
     You can add departments.
   </div>
-  <Can permission="system:dept:add">
+  <Can :p="['system:dept:add']">
     Visible by permission.
   </Can>
-  <Can :roles="['admin', 'ops']">
+  <Can :r="['admin', 'ops']">
     Visible by role.
   </Can>
-  <Can :permissions="['system:dept:add', 'system:config:export']" mode="all">
+  <Can :p="['system:dept:add', 'system:config:export']" mode="all">
     Requires both permissions.
   </Can>
-  <div v-if="can('add', 'system:dept')">
+  <div v-if="can('system:dept:add')">
     useAbility().can 也可直接使用
   </div>
 </template>
@@ -116,10 +119,10 @@ createApp(App)
 
 ```vue
 <template>
-  <button :disabled="!$can('export', 'system:config')">
+  <button :disabled="!$can('system:config:export')">
     导出配置
   </button>
-  <div v-if="$can('add', 'system:dept')">
+  <div v-if="$can('system:dept:add')">
     允许新增部门
   </div>
   <div v-if="$ability.hasPermission('system:config:export')">
@@ -139,8 +142,8 @@ import { computed } from 'vue'
 
 const { can, hasPermission, hasRole } = useAbility()
 
-const canAddDept = computed(() => can('add', 'system:dept'))
-const canExportConfig = computed(() => hasPermission?.('system:config:export'))
+const canAddDept = computed(() => can('system:dept:add'))
+const canExportConfig = computed(() => can('system:config:export'))
 const isAdmin = computed(() => hasRole?.('admin'))
 ```
 
@@ -172,8 +175,8 @@ const isAdmin = computed(() => hasRole?.('admin'))
 
 ### Props
 
-- `role` / `roles`：字符串或字符串数组
-- `permission` / `permissions`：字符串或字符串数组
+- `r`：角色数组（string[]）
+- `p`：权限数组（string[]）
 - `mode`：`'any' | 'all'`，默认 `any`
 - `not`：反向判断
 - `passThrough`：插槽参数透传 `{ allowed, ability }`
@@ -181,7 +184,7 @@ const isAdmin = computed(() => hasRole?.('admin'))
 ### 判定逻辑
 
 - 默认 `mode="any"`：任一角色或权限命中即通过。
-- 同时传入 `roles` 与 `permissions` 时，**默认任意命中即可**。
+- 同时传入 `r` 与 `p` 时，**默认任意命中即可**。
 - 需要全部匹配时使用 `mode="all"`。
 
 ### 示例
@@ -192,22 +195,22 @@ import { Can } from '@icebreakers/ability'
 </script>
 
 <template>
-  <Can permission="system:dept:add">
+  <Can :p="['system:dept:add']">
     拥有 system:dept:add 权限时显示
   </Can>
-  <Can :permissions="['system:dept:add', 'system:config:export']" mode="all">
+  <Can :p="['system:dept:add', 'system:config:export']" mode="all">
     需要全部权限
   </Can>
-  <Can role="admin">
+  <Can :r="['admin']">
     拥有 admin 角色时显示
   </Can>
-  <Can :roles="['admin', 'ops']">
+  <Can :r="['admin', 'ops']">
     任意角色即可
   </Can>
-  <Can :permissions="['system:report:read']" not>
+  <Can :p="['system:report:read']" not>
     没有权限时显示
   </Can>
-  <Can v-slot="{ allowed }" :permissions="['system:user:remove']" passThrough>
+  <Can v-slot="{ allowed }" :p="['system:user:remove']" passThrough>
     <span>{{ allowed ? '可移除用户' : '无权限' }}</span>
   </Can>
 </template>
@@ -310,9 +313,10 @@ import { createRolePermissionAbility } from '@icebreakers/ability'
 const ability = createRolePermissionAbility(
   { permissions: ['system:dept:add'] },
   {
-    permissionMatcher: (action, subject) => {
-      const subjectName = typeof subject === 'string' ? subject : ''
-      return action === 'add' && subjectName === 'system:dept'
+    permissionMatcher: (permission) => {
+      const allowList = ['system:dept:add']
+      // eslint-disable-next-line unicorn/prefer-includes -- explicit some() usage in docs
+      return allowList.some(item => item === permission)
     },
   },
 )
@@ -323,5 +327,5 @@ const ability = createRolePermissionAbility(
 - `abilitiesPlugin(app, ability, options)`：注册能力实例
 - `useAbility()`：注入能力实例
 - `provideAbility(ability)`：为子树提供能力实例
-- `<Can>`：基于 roles/permissions 渲染
+- `<Can>`：基于 r/p 渲染
 - `createRolePermissionAbility(snapshot?, options?)`：创建角色/权限能力

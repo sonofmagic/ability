@@ -12,8 +12,8 @@ const permissions = computed(() => store.state.auth.permissions)
 const loading = computed(() => store.state.auth.loading)
 const lastUpdated = computed(() => store.state.auth.lastUpdated)
 
-const canExportConfig = computed(() => can('export', 'system:config'))
-const canAddDept = computed(() => can('add', 'system:dept'))
+const canExportConfig = computed(() => can('system:config:export'))
+const canAddDept = computed(() => can('system:dept:add'))
 
 const refresh = () => store.dispatch('auth/refreshAuth')
 
@@ -60,20 +60,20 @@ onMounted(() => {
     <section class="grid">
       <article class="module" style="--delay: 0ms">
         <h3>系统权限</h3>
-        <Can permission="system:config:export">
+        <Can :p="['system:config:export']">
           <p class="flag ok">允许导出配置</p>
         </Can>
-        <Can permission="system:dept:add">
+        <Can :p="['system:dept:add']">
           <p class="flag ok">允许新增部门</p>
         </Can>
-        <Can permission="system:user:remove" not>
+        <Can :p="['system:user:remove']" not>
           <p class="flag warn">用户移除被锁定</p>
         </Can>
       </article>
 
       <article class="module" style="--delay: 120ms">
         <h3>报表视图</h3>
-        <Can permission="system:report:read" passThrough v-slot="{ allowed }">
+        <Can :p="['system:report:read']" passThrough v-slot="{ allowed }">
           <p :class="['flag', allowed ? 'ok' : 'warn']">
             {{ allowed ? '可以查看报表' : '没有报表权限' }}
           </p>

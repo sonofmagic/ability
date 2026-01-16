@@ -23,7 +23,7 @@ Vue.use(abilitiesPlugin, ability, { useGlobalProperties: true })
 
 ```vue
 <template>
-  <button :disabled="!$can('export', 'system:config')">
+  <button :disabled="!$can('system:config:export')">
     导出配置
   </button>
   <div v-if="$ability.hasRole('admin')">
@@ -35,12 +35,16 @@ Vue.use(abilitiesPlugin, ability, { useGlobalProperties: true })
 ## 使用 <Can>
 
 ```vue
-<template>
-  <Can permission="system:dept:add">可新增部门</Can>
-  <Can :permissions="['system:dept:add', 'system:config:export']" mode="all">全部权限</Can>
-</template>
-
 <script setup lang="ts">
 import { Can } from '@icebreakers/ability-vue2'
 </script>
+
+<template>
+  <Can :p="['system:dept:add']">
+    可新增部门
+  </Can>
+  <Can :p="['system:dept:add', 'system:config:export']" mode="all">
+    全部权限
+  </Can>
+</template>
 ```

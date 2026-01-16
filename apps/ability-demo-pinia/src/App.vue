@@ -11,8 +11,8 @@ const permissions = computed(() => store.permissions)
 const loading = computed(() => store.loading)
 const lastUpdated = computed(() => store.lastUpdated)
 
-const canPublish = computed(() => can('publish', 'system:post'))
-const canManageUsers = computed(() => can('remove', 'system:user'))
+const canPublish = computed(() => can('system:post:publish'))
+const canManageUsers = computed(() => can('system:user:remove'))
 
 const refresh = () => store.refreshAuth()
 
@@ -68,20 +68,20 @@ onMounted(() => {
     <section class="grid">
       <article class="card" style="--delay: 0ms">
         <h3>内容权限</h3>
-        <Can permission="system:dept:add">
+        <Can :p="['system:dept:add']">
           <p class="status yes">可新增部门</p>
         </Can>
-        <Can permission="system:post:edit">
+        <Can :p="['system:post:edit']">
           <p class="status yes">可编辑帖子</p>
         </Can>
-        <Can permission="system:post:remove" not>
+        <Can :p="['system:post:remove']" not>
           <p class="status no">暂时不能删除帖子</p>
         </Can>
       </article>
 
       <article class="card" style="--delay: 120ms">
         <h3>用户权限</h3>
-        <Can permission="system:user:remove" passThrough v-slot="{ allowed }">
+        <Can :p="['system:user:remove']" passThrough v-slot="{ allowed }">
           <p :class="['status', allowed ? 'yes' : 'no']">
             {{ allowed ? '可以移除用户' : '没有用户移除权限' }}
           </p>
