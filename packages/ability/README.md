@@ -147,6 +147,34 @@ const canExportConfig = computed(() => can('system:config:export'))
 const isAdmin = computed(() => hasRole?.('admin'))
 ```
 
+### useAbility 使用场景（建议）
+
+- 需要在 `setup()` 中计算权限开关（按钮可用性、功能模块开关）。
+- 需要在脚本逻辑中做权限判断（请求前检查、事件处理、数据过滤）。
+- 需要把权限判断封装为组合式函数，在多个组件复用。
+- 不适合用 `<Can>` 的场景（非模板逻辑、需要多条件组合）。
+
+### useAbility 推荐写法（强类型）
+
+如果使用 `createRolePermissionAbility`，建议显式标注类型，这样 `hasRole/hasPermission` 可直接使用。
+
+```ts
+import type { RolePermissionAbility } from '@icebreakers/ability'
+import { useAbility } from '@icebreakers/ability'
+import { computed } from 'vue'
+
+const ability = useAbility<RolePermissionAbility>()
+
+const canExportConfig = computed(() => ability.hasPermission('system:config:export'))
+const canRemoveUser = computed(() => ability.hasPermission('system:user:remove'))
+const isAdmin = computed(() => ability.hasRole('admin'))
+```
+
+### 注意事项
+
+- `useAbility()` 只能在 `setup()` 或组合式函数内使用。
+- 路由守卫、store 模块等非 `setup` 环境，请直接导入能力实例（例如 `import { ability } from './ability'`）进行判断。
+
 ## 权限字符串规则
 
 - 默认格式：`subject:action`，分隔符为 `:`，常见形态为 `system:dept:add`（最后一段为 action）。
