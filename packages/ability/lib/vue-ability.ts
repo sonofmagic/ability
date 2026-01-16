@@ -1,9 +1,9 @@
-import type { AbilityLike } from './types'
+import type { RolePermissionAbility } from './rolePermissionAbility'
 
 declare module 'vue' {
   interface ComponentCustomProperties {
-    $ability?: AbilityLike
-    $can?: AbilityLike['can']
+    $ability: RolePermissionAbility
+    $can: RolePermissionAbility['can']
   }
 }
 

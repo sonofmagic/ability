@@ -1,8 +1,38 @@
 # @icebreakers/ability
 
-Lightweight Vue 3 ability helpers inspired by `@casl/vue`, without CASL dependency.
+轻量级的 Vue 3 权限能力辅助库，专注于「登录后从后端拉取 roles + permissions，刷新后可能变化」的场景。无 CASL 依赖。
 
-## Usage
+## 设计方案（中文）
+
+### 背景
+
+- 项目通常在登录或刷新时，从后端获取 `roles` 与 `permissions`。
+- 前端需要一个可更新的能力实例，以便 UI 与路由权限即时刷新。
+
+### 目标
+
+- 用最小 API 覆盖绝大多数权限判断场景。
+- 能随登录/刷新更新权限，并驱动 Vue 响应式更新。
+- 不强依赖 Pinia/Vuex，保持框架无关。
+
+### 核心设计
+
+- 提供 `createRolePermissionAbility`，内部维护 `roles` 与 `permissions` 集合。
+- 每次更新权限触发 `updated` 事件，配合 `reactiveAbility` 让 `<Can>` 与 `useAbility()` 自动响应。
+- `<Can>` 组件以 **role/permission 直传** 为核心，支持 `any/all` 模式，且可反向判断。
+
+### 数据流示意
+
+1. 登录或刷新 -> 拉取 `{ roles, permissions }`。
+2. Store 更新状态，同时调用 `ability.update(payload)`。
+3. `<Can>` 与 `useAbility().can/hasRole/hasPermission` 自动重新计算。
+
+### 兼容性
+
+- `abilitiesPlugin` 只要求 `ability.can()`，因此仍支持自定义能力实例。
+- `<Can>` 依赖 `hasRole` / `hasPermission`（推荐使用 `createRolePermissionAbility`）。
+
+## 快速开始（基础能力）
 
 ```ts
 import { abilitiesPlugin } from '@icebreakers/ability'
@@ -20,7 +50,9 @@ createApp(App)
   .mount('#app')
 ```
 
-## Role/Permission helper
+## 推荐用法：Roles + Permissions
+
+### 创建能力实例
 
 ```ts
 import { abilitiesPlugin, createRolePermissionAbility } from '@icebreakers/ability'
@@ -35,10 +67,16 @@ const ability = createRolePermissionAbility(
 createApp(App)
   .use(abilitiesPlugin, ability, { useGlobalProperties: true })
   .mount('#app')
-
-// After login or refresh:
-// ability.update({ roles: ['admin'], permissions: ['post:read', 'post:edit'] })
 ```
+
+### 登录/刷新后更新
+
+```ts
+// 登录或刷新后从后端获取 roles + permissions
+ability.update({ roles: ['admin'], permissions: ['post:read', 'post:edit'] })
+```
+
+### 在组件中使用
 
 ```vue
 <script setup lang="ts">
@@ -48,7 +86,7 @@ const { can } = useAbility()
 </script>
 
 <template>
-  <div v-if="$can?.('read', 'Post')">
+  <div v-if="$can('read', 'Post')">
     You can read posts.
   </div>
   <Can permission="post:read">
@@ -60,30 +98,93 @@ const { can } = useAbility()
   <Can :permissions="['post:read', 'post:edit']" mode="all">
     Requires both permissions.
   </Can>
+  <div v-if="can('read', 'Post')">
+    useAbility().can 也可直接使用
+  </div>
 </template>
 ```
 
-## 中文文档
+### 使用 $can / $ability（全局注入）
 
-### 快速开始
+前提：在注册插件时开启 `useGlobalProperties: true`。
 
 ```ts
-import { abilitiesPlugin, createRolePermissionAbility } from '@icebreakers/ability'
-import { createApp } from 'vue'
-import App from './App.vue'
-
-const ability = createRolePermissionAbility(
-  { roles: [], permissions: [] },
-  { normalize: value => value.toLowerCase() },
-)
-
 createApp(App)
   .use(abilitiesPlugin, ability, { useGlobalProperties: true })
   .mount('#app')
-
-// 登录或刷新后从后端获取 roles + permissions
-// ability.update({ roles: ['admin'], permissions: ['post:read', 'post:edit'] })
 ```
+
+```vue
+<template>
+  <button :disabled="!$can('edit', 'Post')">
+    编辑帖子
+  </button>
+  <div v-if="$can('read', 'Post')">
+    允许查看帖子
+  </div>
+  <div v-if="$ability.hasPermission('post:publish')">
+    允许发布
+  </div>
+  <div v-if="$ability.hasRole('admin')">
+    管理员入口
+  </div>
+</template>
+```
+
+### 使用 useAbility（组合式 API）
+
+```ts
+import { useAbility } from '@icebreakers/ability'
+import { computed } from 'vue'
+
+const { can, hasPermission, hasRole } = useAbility()
+
+const canEditPost = computed(() => can('edit', 'Post'))
+const canPublish = computed(() => hasPermission?.('post:publish'))
+const isAdmin = computed(() => hasRole?.('admin'))
+```
+
+## 权限字符串规则
+
+- 默认格式：`subject:action`，分隔符为 `:`。
+- 通配符：`*`，示例：`post:*`、`*:read`、`*:*`。
+- 只传 action 也可（如 `read`），用于极简权限。
+- 可通过 `order: 'action:subject'` 切换格式。
+
+## createRolePermissionAbility 选项
+
+- `separator`: 权限字符串分隔符，默认 `:`
+- `wildcard`: 通配符字符，默认 `*`
+- `order`: `'subject:action' | 'action:subject'`，默认 `subject:action`
+- `normalize`: 权限字符串归一化函数（如转小写、去空格）
+- `permissionMatcher`: 自定义权限判断函数，覆盖默认匹配逻辑
+
+## createRolePermissionAbility 方法
+
+- `update(snapshot?)`: 更新角色与权限（支持空值重置）
+- `setRoles(roles)` / `setPermissions(permissions)`: 单独更新
+- `reset()`: 重置为空（可视为登出）
+- `hasRole(role)` / `hasPermission(permission)`: 直接判断
+- `getSnapshot()`: 获取当前快照
+- `on/off/subscribe`: 监听 `updated` 事件（供响应式更新）
+
+## <Can> 组件（中文）
+
+### Props
+
+- `role` / `roles`：字符串或字符串数组
+- `permission` / `permissions`：字符串或字符串数组
+- `mode`：`'any' | 'all'`，默认 `any`
+- `not`：反向判断
+- `passThrough`：插槽参数透传 `{ allowed, ability }`
+
+### 判定逻辑
+
+- 默认 `mode="any"`：任一角色或权限命中即通过。
+- 同时传入 `roles` 与 `permissions` 时，**默认任意命中即可**。
+- 需要全部匹配时使用 `mode="all"`。
+
+### 示例
 
 ```vue
 <script setup lang="ts">
@@ -112,43 +213,115 @@ import { Can } from '@icebreakers/ability'
 </template>
 ```
 
-### 权限字符串规则
+## 结合 Pinia 的用法
 
-- 默认格式为 `subject:action`，分隔符为 `:`。
-- 支持通配符 `*`：例如 `post:*`、`*:read` 或 `*:*`。
-- 可通过 `order: 'action:subject'` 切换成 `action:subject` 格式。
-- 若需要自定义匹配规则，可传入 `permissionMatcher` 完全接管判断逻辑。
+```ts
+import { defineStore } from 'pinia'
+import { ability } from './ability'
+import { fetchAuthProfile } from './services/auth'
 
-### `createRolePermissionAbility` 选项
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    roles: [] as string[],
+    permissions: [] as string[],
+  }),
+  actions: {
+    async refreshAuth() {
+      const payload = await fetchAuthProfile()
+      this.roles = payload.roles
+      this.permissions = payload.permissions
+      ability.update(payload)
+    },
+  },
+})
+```
 
-- `separator`: 权限字符串分隔符，默认 `:`
-- `wildcard`: 通配符字符，默认 `*`
-- `order`: `'subject:action' | 'action:subject'`，默认 `subject:action`
-- `normalize`: 权限字符串归一化函数（如转小写、去空格）
-- `permissionMatcher`: 自定义权限判断函数，覆盖默认匹配逻辑
+## 结合 Vuex 的用法
 
-### `<Can>` Props（中文）
+```ts
+import { createStore } from 'vuex'
+import { ability } from './ability'
+import { fetchAuthProfile } from './services/auth'
 
-- `role` / `roles`：字符串或字符串数组
-- `permission` / `permissions`：字符串或字符串数组
-- `mode`：`'any' | 'all'`，默认 `any`
-- `not`：反向判断
-- `passThrough`：插槽参数透传 `{ allowed, ability }`
-- `<Can>` 依赖 `hasRole` / `hasPermission`（推荐使用 `createRolePermissionAbility`）。
+export const store = createStore({
+  state: () => ({
+    roles: [] as string[],
+    permissions: [] as string[],
+  }),
+  mutations: {
+    setAuth(state, payload: { roles: string[], permissions: string[] }) {
+      state.roles = payload.roles
+      state.permissions = payload.permissions
+    },
+  },
+  actions: {
+    async refreshAuth({ commit }) {
+      const payload = await fetchAuthProfile()
+      commit('setAuth', payload)
+      ability.update(payload)
+    },
+  },
+})
+```
 
-## API
+## 路由守卫示例
 
-- `abilitiesPlugin(app, ability, options)` registers the reactive ability instance.
-- `useAbility()` injects the ability instance.
-- `provideAbility(ability)` provides a scoped ability for a subtree.
-- `Can` component renders based on provided role/permission checks.
-- `createRolePermissionAbility(snapshot?, options?)` creates an ability with role/permission helpers.
+```ts
+import { createRouter } from 'vue-router'
+import { ability } from './ability'
 
-### `<Can>` props
+const router = createRouter({
+  history,
+  routes,
+})
 
-- `role` / `roles`: string or string[]
-- `permission` / `permissions`: string or string[]
-- `mode`: `'any' | 'all'` (default: `any`)
-- `not`: invert the result
-- `passThrough`: expose `{ allowed, ability }` in slot props
-- `Can` expects an ability that implements `hasRole`/`hasPermission` (e.g., `createRolePermissionAbility`).
+router.beforeEach((to) => {
+  const metaPermission = to.meta?.permission as string | undefined
+  if (!metaPermission) {
+    return true
+  }
+
+  if (!ability.hasPermission?.(metaPermission)) {
+    return { name: '403' }
+  }
+
+  return true
+})
+```
+
+## 子树能力覆盖（provideAbility）
+
+```ts
+import { createRolePermissionAbility, provideAbility } from '@icebreakers/ability'
+
+const childAbility = createRolePermissionAbility({
+  roles: ['auditor'],
+  permissions: ['*:read'],
+})
+
+provideAbility(childAbility)
+```
+
+## 自定义匹配 permissionMatcher
+
+```ts
+import { createRolePermissionAbility } from '@icebreakers/ability'
+
+const ability = createRolePermissionAbility(
+  { permissions: ['post:read'] },
+  {
+    permissionMatcher: (action, subject) => {
+      const subjectName = typeof subject === 'string' ? subject : ''
+      return action === 'read' && subjectName === 'Post'
+    },
+  },
+)
+```
+
+## API 速查
+
+- `abilitiesPlugin(app, ability, options)`：注册能力实例
+- `useAbility()`：注入能力实例
+- `provideAbility(ability)`：为子树提供能力实例
+- `<Can>`：基于 roles/permissions 渲染
+- `createRolePermissionAbility(snapshot?, options?)`：创建角色/权限能力
