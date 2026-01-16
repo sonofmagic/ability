@@ -1,6 +1,6 @@
 # @icebreakers/ability
 
-轻量级的 Vue 3 权限能力辅助库，专注于「登录后从后端拉取 roles + permissions，刷新后可能变化」的场景。无 CASL 依赖。
+轻量级的 Vue 3 权限能力辅助库，专注于「登录后从后端拉取 roles + permissions，刷新后可能变化」的场景。
 
 ## 设计方案（中文）
 
