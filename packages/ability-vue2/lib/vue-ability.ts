@@ -1,10 +1,8 @@
-import type { AbilityLike } from './types'
+type AbilityLike = import('./types').AbilityLike
 
-declare module 'vue/types/vue' {
+declare module 'vue' {
   interface Vue {
-    $ability: AbilityLike
-    $can: AbilityLike['can']
+    $ability?: AbilityLike
+    $can?: AbilityLike['can']
   }
 }
-
-export {}

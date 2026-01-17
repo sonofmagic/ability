@@ -14,7 +14,9 @@
     "url": "https://github.com/sonofmagic/ability/issues"
   },
   "keywords": [],
-  "sideEffects": false,
+  "sideEffects": [
+    "./lib/vue-ability.ts"
+  ],
   "exports": {
     ".": "./lib/index.ts"
   },
