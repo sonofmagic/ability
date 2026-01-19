@@ -29,5 +29,11 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 export async function fetchAuthProfile(): Promise<AuthProfile> {
   await delay(650)
   cursor = (cursor + 1) % samples.length
-  return samples[cursor]
+  const profile = samples[cursor]
+
+  if (!profile) {
+    throw new Error('No auth profiles configured.')
+  }
+
+  return profile
 }

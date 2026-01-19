@@ -58,7 +58,9 @@ onMounted(() => {
     </section>
 
     <section class="grid">
-      <article class="module" style="--delay: 0ms">
+      <article class="module" style="
+
+--delay: 0ms">
         <h3>系统权限</h3>
         <Can :p="['system:config:export']">
           <p class="flag ok">允许导出配置</p>
@@ -71,7 +73,9 @@ onMounted(() => {
         </Can>
       </article>
 
-      <article class="module" style="--delay: 120ms">
+      <article class="module" style="
+
+--delay: 120ms">
         <h3>报表视图</h3>
         <Can :p="['system:report:read']" passThrough v-slot="{ allowed }">
           <p :class="['flag', allowed ? 'ok' : 'warn']">
@@ -81,7 +85,9 @@ onMounted(() => {
         <p class="note">支持 <code>*:read</code> 通配。</p>
       </article>
 
-      <article class="module" style="--delay: 240ms">
+      <article class="module" style="
+
+--delay: 240ms">
         <h3>直接检查</h3>
         <p :class="['flag', canExportConfig ? 'ok' : 'warn']">
           配置导出：{{ canExportConfig ? '可用' : '不可用' }}

@@ -66,7 +66,9 @@ onMounted(() => {
     </section>
 
     <section class="grid">
-      <article class="card" style="--delay: 0ms">
+      <article class="card" style="
+
+--delay: 0ms">
         <h3>内容权限</h3>
         <Can :p="['system:dept:add']">
           <p class="status yes">可新增部门</p>
@@ -79,7 +81,9 @@ onMounted(() => {
         </Can>
       </article>
 
-      <article class="card" style="--delay: 120ms">
+      <article class="card" style="
+
+--delay: 120ms">
         <h3>用户权限</h3>
         <Can :p="['system:user:remove']" passThrough v-slot="{ allowed }">
           <p :class="['status', allowed ? 'yes' : 'no']">
@@ -89,7 +93,9 @@ onMounted(() => {
         <p class="hint">这个卡片使用了 <code>passThrough</code> 插槽。</p>
       </article>
 
-      <article class="card" style="--delay: 240ms">
+      <article class="card" style="
+
+--delay: 240ms">
         <h3>直接调用</h3>
         <p class="status" :class="canPublish ? 'yes' : 'no'">
           发布权限：{{ canPublish ? '已解锁' : '未开放' }}
